@@ -1,0 +1,10 @@
+== 🚈 suckless
+
+personal forks of https://tools.suckless.org[suckless] tools
+
+== 📑 software
+
+* https://tools.suckless.org/dmenu/patches[dmenu]
+  ** case insensitive
+  
+
