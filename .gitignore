@@ -1,4 +1,5 @@
 dmenu/dmenu
+dmenu/stest
 dmenu/config.h
 
 **/*.o
