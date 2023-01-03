@@ -58,16 +58,15 @@ function parse(str)
   local result = {}
   local section = nil
 
-  for line in str:gmatch("[^\n]+") do
-    line = line:gsub("%s*#.*", "") -- remove comments
-    local key, value = line:match("^%s*(%S+)%s*=%s*(.+)%s*$")
-    if key and value then
-      if section then
-        key = section .. "-" .. key
+  for line in str:gmatch("[^\r\n]+") do
+    if line:sub(1, 1) == "[" and line:sub(-1, -1) == "]" then
+      section = line:sub(2, -2)
+    elseif section == "Desktop Entry" then
+      local key, value = line:match("([^=]+)=(.*)")
+
+      if key and value then
+        result[section .. "-" .. key] = value
       end
-      result[key] = value
-    else
-      section = line:match("^%[(.+)%]$")
     end
   end
 
@@ -121,6 +120,10 @@ for _, desktop in pairs(desktops) do
 
     table.insert(apps, { name, exec })
   end
+end
+
+for _, app in pairs(apps) do
+  print(app[1])
 end
 
 local last_access = parse(last_access_file())
