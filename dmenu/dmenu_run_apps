@@ -114,7 +114,8 @@ for _, desktop in pairs(desktops) do
   local file_content = read_file(desktop)
   local desktop_file = parse(file_content)
 
-  if desktop_file["Desktop Entry-Exec"] then
+  if desktop_file["Desktop Entry-Exec"] and desktop_file["Desktop Entry-Hidden"] ~= "true" and
+      desktop_file["Desktop Entry-NoDisplay"] ~= "true" then
     local name = desktop_file["Desktop Entry-Name"] or desktop_file["Desktop Entry-Exec"]
     local exec = desktop_file["Desktop Entry-Exec"]
 
