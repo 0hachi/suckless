@@ -54,7 +54,24 @@ function find(dir, ext)
   return files
 end
 
-function parse(str)
+-- TODO: Combine parse_kv and parse_desktop
+-- BLOCKING: I don't know how to do this.
+
+function parse_kv(str)
+  local result = {}
+
+  for line in str:gmatch("[^\r\n]+") do
+    local key, value = line:match("([^=]+)=(.*)")
+
+    if key and value then
+      result[key] = value
+    end
+  end
+
+  return result
+end
+
+function parse_desktop(str)
   local result = {}
   local section = nil
 
@@ -74,8 +91,6 @@ function parse(str)
 end
 
 function last_access_file()
-  -- $HOME/.config/dmenu_run_apps_access
-  -- If doesn't exist, create it
   local file = os.getenv("HOME") .. "/.config/dmenu_run_apps_access"
   local f = io.open(file, "r")
 
@@ -112,7 +127,7 @@ end
 
 for _, desktop in pairs(desktops) do
   local file_content = read_file(desktop)
-  local desktop_file = parse(file_content)
+  local desktop_file = parse_desktop(file_content)
 
   if desktop_file["Desktop Entry-Exec"] and desktop_file["Desktop Entry-Hidden"] ~= "true" and
       desktop_file["Desktop Entry-NoDisplay"] ~= "true" then
@@ -123,11 +138,7 @@ for _, desktop in pairs(desktops) do
   end
 end
 
-for _, app in pairs(apps) do
-  print(app[1])
-end
-
-local last_access = parse(last_access_file())
+local last_access = parse_kv(last_access_file())
 
 for _, app in pairs(apps) do
   local name = app[1]
@@ -144,7 +155,6 @@ end)
 
 for i, app in pairs(sorted_apps) do
   local name = app[1]
-  local exec = app[2]
 
   dmenu_command = dmenu_command .. name .. "\\n"
 
