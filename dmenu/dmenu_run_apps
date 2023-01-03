@@ -44,6 +44,21 @@ function split(str, sep)
   return fields
 end
 
+function join(tbl, sep)
+  local sep = sep or ":"
+  local str = ""
+
+  for i, v in pairs(tbl) do
+    str = str .. v
+
+    if i ~= #tbl then
+      str = str .. sep
+    end
+  end
+
+  return str
+end
+
 function find(dir, ext)
   local files = {}
 
@@ -159,7 +174,7 @@ for i, app in pairs(sorted_apps) do
   dmenu_command = dmenu_command .. name .. "\\n"
 
   if i == #sorted_apps then
-    dmenu_command = dmenu_command .. "\" | " .. "dmenu -p 'run:' "
+    dmenu_command = dmenu_command .. "\" | " .. "dmenu" .. join(arg, " ")
   end
 end
 
