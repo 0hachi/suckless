@@ -8,6 +8,7 @@ some software may have unused patches in my config. +
 it's nothing but laziness. i swear one day i'll fix it 😥
 
 * https://tools.suckless.org/dmenu/patches[dmenu]
+** luajit powered https://man.archlinux.org/man/community/i3-wm/i3-dmenu-desktop.1.en[i3-dmenu-desktop]-like menu with last-used priority.footnote:[for something more stable/fast you might be interested in https://github.com/enkore/j4-dmenu-desktop[j4-dmenu-desktop]]
 ** input field theme
 ** case insensitive
 ** fuzzy matching

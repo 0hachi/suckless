@@ -1,0 +1,171 @@
+#! /usr/bin/env luajit
+
+---@diagnostic disable: need-check-nil
+-- lua is a god awful language, but i
+-- didn't want to write this in bash or python
+--
+-- of course, code is not top-notch,
+-- i don't know lua that well, but it's pretty fast
+
+local dmenu_command = "echo -e \""
+local desktops      = {}
+local xdg_dirs      = {}
+local apps          = {}
+local sorted_apps   = {}
+
+function read_file(path)
+  local file = io.open(path, "r")
+  if not file then
+    error("could not open file: " .. path)
+  end
+
+  local content = file:read("*all")
+  file:close()
+
+  return content
+end
+
+function append_dir_if_exists(dirs, dir)
+  local file = io.open(dir, "r")
+  if file then
+    table.insert(dirs, dir)
+    file:close()
+  end
+end
+
+function split(str, sep)
+  local sep = sep or ":"
+  local fields = {}
+
+  for field in str:gmatch("([^" .. sep .. "]+)") do
+    fields[#fields + 1] = field
+  end
+
+  return fields
+end
+
+function find(dir, ext)
+  local files = {}
+
+  for file in io.popen("find " .. dir .. " -type f -name '*." .. ext .. "'"):lines() do
+    table.insert(files, file)
+  end
+
+  return files
+end
+
+function parse(str)
+  local result = {}
+  local section = nil
+
+  for line in str:gmatch("[^\n]+") do
+    line = line:gsub("%s*#.*", "") -- remove comments
+    local key, value = line:match("^%s*(%S+)%s*=%s*(.+)%s*$")
+    if key and value then
+      if section then
+        key = section .. "-" .. key
+      end
+      result[key] = value
+    else
+      section = line:match("^%[(.+)%]$")
+    end
+  end
+
+  return result
+end
+
+function last_access_file()
+  -- $HOME/.config/dmenu_run_apps_access
+  -- If doesn't exist, create it
+  local file = os.getenv("HOME") .. "/.config/dmenu_run_apps_access"
+  local f = io.open(file, "r")
+
+  if not f then
+    f = io.open(file, "w")
+    f:write("")
+    f:close()
+  end
+
+  f = io.open(file, "r")
+  local last_access = f:read("*all")
+  f:close()
+
+  return last_access
+end
+
+function remove_args(str)
+  local result = str:gsub("%%.", "")
+  return result
+end
+
+append_dir_if_exists(xdg_dirs,
+  (os.getenv("XDG_DATA_HOME") or os.getenv("HOME") .. "/.local/share") .. "/applications")
+
+for _, dir in pairs(split(os.getenv("XDG_DATA_DIRS") or "/usr/local/share:/usr/share", ":")) do
+  append_dir_if_exists(xdg_dirs, dir .. "/applications")
+end
+
+for _, dir in pairs(xdg_dirs) do
+  for i, file in pairs(find(dir, "desktop")) do
+    desktops[i] = file
+  end
+end
+
+for _, desktop in pairs(desktops) do
+  local file_content = read_file(desktop)
+  local desktop_file = parse(file_content)
+
+  if desktop_file["Desktop Entry-Exec"] then
+    local name = desktop_file["Desktop Entry-Name"] or desktop_file["Desktop Entry-Exec"]
+    local exec = desktop_file["Desktop Entry-Exec"]
+
+    table.insert(apps, { name, exec })
+  end
+end
+
+local last_access = parse(last_access_file())
+
+for _, app in pairs(apps) do
+  local name = app[1]
+  local exec = app[2]
+
+  if last_access[name] then table.insert(sorted_apps, { name, exec, tonumber(last_access[name]) })
+  else table.insert(sorted_apps, { name, exec, 0 }) end
+end
+
+table.sort(sorted_apps, function(a, b)
+  return a[3] > b[3]
+end)
+
+
+for i, app in pairs(sorted_apps) do
+  local name = app[1]
+  local exec = app[2]
+
+  dmenu_command = dmenu_command .. name .. "\\n"
+
+  if i == #sorted_apps then
+    dmenu_command = dmenu_command .. "\" | " .. "dmenu -p 'run:' "
+  end
+end
+
+local choice = io.popen(dmenu_command):read("*all")
+
+for _, app in pairs(sorted_apps) do
+  local name = app[1]
+  local exec = app[2]
+
+  if choice == name .. "\n" then
+    os.execute(remove_args(exec))
+
+    last_access[name] = os.time()
+
+    local file = io.open(os.getenv("HOME") .. "/.config/dmenu_run_apps_access", "w")
+
+    for k, v in pairs(last_access) do
+      file:write(k .. "=" .. v .. "\n")
+    end
+
+    file:close()
+  end
+end
