@@ -13,6 +13,7 @@ it's nothing but laziness. i swear one day i'll fix it 😥
 ** case insensitive
 ** fuzzy matching
 ** transparency
+** prompt theme
 ** line height
 ** highlight
 ** grid nav

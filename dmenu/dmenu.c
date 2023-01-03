@@ -40,6 +40,7 @@ enum {
   SchemeSelHighlight,
   SchemeOut,
   SchemeInputField,
+  SchemePrompt,
   SchemeLast,
 }; /* color schemes */
 
@@ -225,7 +226,7 @@ static void drawmenu(void) {
   drw_rect(drw, 0, 0, mw, mh, 1, 1);
 
   if (prompt && *prompt) {
-    drw_setscheme(drw, scheme[SchemeSel]);
+    drw_setscheme(drw, scheme[SchemePrompt]);
     x = drw_text(drw, x, 0, promptw, bh, lrpad / 2, prompt, 0);
   }
   /* draw input field */
