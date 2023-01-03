@@ -4,13 +4,19 @@ personal forks of https://tools.suckless.org[suckless] tools
 
 == 📑 software
 
+some software may have unused patches in my config. +
+it's nothing but laziness. i swear one day i'll fix it 😥
+
 * https://tools.suckless.org/dmenu/patches[dmenu]
+** input field theme
 ** case insensitive
 ** fuzzy matching
 ** transparency
+** line height
 ** highlight
 ** grid nav
 ** numbers
 ** center
 ** border
 ** grid
+** xyw

@@ -39,7 +39,8 @@ enum {
   SchemeNormHighlight,
   SchemeSelHighlight,
   SchemeOut,
-  SchemeLast
+  SchemeInputField,
+  SchemeLast,
 }; /* color schemes */
 
 struct item {
@@ -53,10 +54,10 @@ static char numbers[NUMBERSBUFSIZE] = "";
 static char text[BUFSIZ] = "";
 static char *embed;
 static int bh, mw, mh;
-static int dmx = 15; /* put dmenu at this x offset */
-static int dmy = 15; /* put dmenu at this y offset (measured from the bottom if
+static int dmx = 0; /* put dmenu at this x offset */
+static int dmy = 0; /* put dmenu at this y offset (measured from the bottom if
                        topbar is 0) */
-static unsigned int dmw = 2372; /* make dmenu this wide */
+static unsigned int dmw = 0; /* make dmenu this wide */
 static int inputw = 0, promptw;
 static int lrpad; /* sum of left and right padding */
 static size_t cursor;
@@ -218,7 +219,7 @@ static void recalculatenumbers() {
 static void drawmenu(void) {
   unsigned int curpos;
   struct item *item;
-  int x = 0, y = 0, w;
+  int x = 0, y = 0, fh = drw->fonts->h, w;
 
   drw_setscheme(drw, scheme[SchemeNorm]);
   drw_rect(drw, 0, 0, mw, mh, 1, 1);
@@ -229,13 +230,13 @@ static void drawmenu(void) {
   }
   /* draw input field */
   w = (lines > 0 || !matches) ? mw - x : inputw;
-  drw_setscheme(drw, scheme[SchemeNorm]);
+  drw_setscheme(drw, scheme[SchemeInputField]);
   drw_text(drw, x, 0, w, bh, lrpad / 2, text, 0);
 
   curpos = TEXTW(text) - TEXTW(&text[cursor]);
   if ((curpos += lrpad / 2 - 1) < w) {
     drw_setscheme(drw, scheme[SchemeNorm]);
-    drw_rect(drw, x + curpos, 2, 2, bh - 4, 1, 0);
+    drw_rect(drw, x + curpos, 2 + (bh - fh) / 2, 2, fh - 4, 1, 0);
   }
 
   recalculatenumbers();
@@ -839,6 +840,7 @@ static void run(void) {
 
 static void setup(void) {
   int x, y, i, j;
+  i = 0;
   unsigned int du;
   XSetWindowAttributes swa;
   XIM xim;
@@ -858,7 +860,7 @@ static void setup(void) {
   utf8 = XInternAtom(dpy, "UTF8_STRING", False);
 
   /* calculate menu geometry */
-  bh = drw->fonts->h + 2;
+  bh = MAX(bh, lineheight);
   lines = MAX(lines, 0);
   mh = (lines + 1) * bh;
   promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
@@ -962,7 +964,7 @@ static void usage(void) {
       "             [-nb color] [-nf color] [-sb color] [-sf color]\n"
       "             [-nhb color] [-nhf color] [-shb color] [-shf color] [-w "
       "windowid]\n"
-      "[-x xoffset] [-y yoffset] [-z width]\n",
+      "             [-x xoffset] [-y yoffset] [-z width]\n",
       stderr);
 }
 
