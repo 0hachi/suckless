@@ -168,13 +168,24 @@ table.sort(sorted_apps, function(a, b)
 end)
 
 
+local args = {}  
+
+for i, v in pairs(arg) do
+  if i > 0 then
+    -- Lua for some reason parses quotes by itself...
+    table.insert(args, "'" .. v .. "'")
+  end
+end
+
+
 for i, app in pairs(sorted_apps) do
   local name = app[1]
 
   dmenu_command = dmenu_command .. name .. "\\n"
 
   if i == #sorted_apps then
-    dmenu_command = dmenu_command .. "\" | " .. "dmenu" .. join(arg, " ")
+    dmenu_command = dmenu_command .. "\" | " .. "dmenu " .. join(args, " ")
+    print(dmenu_command)
   end
 end
 
