@@ -1,4 +1,5 @@
-#! /usr/bin/env luajit
+#! /usr/bin/env -S luajit 
+--  -O2 -jv 
 
 ---@diagnostic disable: need-check-nil
 -- lua is a god awful language, but i
@@ -135,12 +136,13 @@ for _, dir in pairs(split(os.getenv("XDG_DATA_DIRS") or "/usr/local/share:/usr/s
 end
 
 for _, dir in pairs(xdg_dirs) do
-  for i, file in pairs(find(dir, "desktop")) do
-    desktops[i] = file
+  for _, file in pairs(find(dir, "desktop")) do
+    table.insert(desktops, file)
   end
 end
 
 for _, desktop in pairs(desktops) do
+  print(desktops[_])
   local file_content = read_file(desktop)
   local desktop_file = parse_desktop(file_content)
 
@@ -184,8 +186,7 @@ for i, app in pairs(sorted_apps) do
   dmenu_command = dmenu_command .. name .. "\\n"
 
   if i == #sorted_apps then
-    dmenu_command = dmenu_command .. "\" | " .. "dmenu " .. join(args, " ")
-    print(dmenu_command)
+    dmenu_command = dmenu_command .. "\" | " .. "dmenu " .. join(args, " ") .. " &"
   end
 end
 
