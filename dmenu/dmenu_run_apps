@@ -1,5 +1,4 @@
-#! /usr/bin/env -S luajit 
---  -O2 -jv 
+#! /usr/bin/env -S luajit -O2 -jv 
 
 ---@diagnostic disable: need-check-nil
 -- lua is a god awful language, but i
